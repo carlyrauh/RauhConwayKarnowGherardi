@@ -19,7 +19,7 @@ When you click the **Knit** button a document will be generated that includes bo
 ```{r Import data}
 
 # import SVI Dataset
-SVI <- read.csv("NORTHCAROLINA_COUNTY.csv", header=TRUE)
+SVI <- read.csv("data/NORTHCAROLINA_COUNTY.csv", header=TRUE)
 
 # SVI data dimensions 
 nrow(SVI)
