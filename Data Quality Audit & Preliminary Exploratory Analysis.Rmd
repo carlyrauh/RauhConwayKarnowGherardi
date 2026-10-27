@@ -1,0 +1,114 @@
+---
+title: "Data Quality Audit & Preliminary Exploratory Analysis"
+author: "Kassie, Luca, Carolina, Carly "
+output: pdf_document
+---
+
+```{r setup}
+library(readr)
+library(here)
+library(dplyr)
+library(ggplot2)
+#loading appropriate packages
+setwd(here())
+getwd() 
+#setting the wroking directory
+FEMA_SVI_data <- read_csv(here
+("data/processed/master_FEMA_SVI_data.csv"))
+```
+
+## Data Modification Outside of the Contained
+Initially, our dataset was far too large for the R container, so some joining/removing/cleaning decisions were made outside of the container to condense our dataset to a managable size. Originially, the FEMA dataset had over 2 million rows of data. Since we are only looking at Hurricane Helene impacts in North Carolina, we were able to remove any non-Helene and non-NC data, narrowing it down to 1,980 rows. Additionally, may columns from the original FEMA dataset were not within our scope of reserach, so we were able to narrow it down to 12 variables or cloumns.
+
+The SVI data was then added onto the FEMA dataset. For the SVI data set, there was 100 rows, 1 for each county in North Carolina. This added an additional 12 columns to the master dataset. Although there is some overlap/ duplication from this, we chose to not merge anything for now. This is because there are mulitple FEMA claims for one county, but only one value (per column) for SVI data for the counties. Further analysis of the FEMA data needs to be done before they would be able to be merged.
+
+```{r dimensions and summaries}
+dim(FEMA_SVI_data)
+#2080 rows, 25 different columns/variables
+str(FEMA_SVI_data)
+#dateOfloss is date class
+#ratedFloodZone and COUNTY are character class
+#all other data is numeric
+range(FEMA_SVI_data$dateOfLoss, na.rm = TRUE)
+#dates are from September 25th, 2024 to September 30th, 2024
+summary(FEMA_SVI_data)
+table(summary(FEMA_SVI_data))
+```
+
+## Coverage
+
+Coverage for the data includes 2080 rows, 25 different columns/variables. Of these variables, one (dateOfloss) is a date class, two (ratedFloodZone & COUNTY) are character classes, and all others are represented in numeric data. Additionally, the date range for coverage is from September 25th to September 30th of 2024.
+
+```{r missing data}
+sum(is.na(FEMA_SVI_data))
+#total amount of NA is 986
+colSums(is.na(FEMA_SVI_data))
+#majority of NA's are located in the building Damage Amount of 
+#& building property value columns
+any(FEMA_SVI_data$M_TOTPOP != 0, na.rm = TRUE)
+#returned false, all values for the M_TOTPOP = 0
+
+```
+## Missing Data
+
+For this data, out of the entire master data set, there was 986 NA entries. It was found that a majority of these were located in the building damage amount and building property columns, with those columns having 195 NA entries each. Addtionally, through looking through the raw data iself, it was noticed that a majority of the M_TOTPOP column was filled with 0's. Thus, code was ran to see if there were any non-zero values in this column; we found that there are in fact only values of 0 within that column.
+
+```{r dupliates}
+sum(duplicated(FEMA_SVI_data))
+#there are 0 duplicated rows
+```
+##Duplicates
+
+For this data, there are no exact duplicate rows. There is some overlap as mentioned above, but we plan to figure out a solution in class this upcoming Thursday.
+
+```{r implausible values}
+sum(FEMA_SVI_data < 0, na.rm = TRUE)
+#there are no negative or implausible values
+```
+##Implausible Values
+
+Within our dataset, there appears to be no obvious implausible data. Since we are working with data involving money, populations, and vulnerability, there should not be any negaative values. Thus, code was ran to ensure there weren't any, and there in fact were not any negative values found.
+
+```{r cleaning}
+FEMA_SVI_data$M_TOTPOP <- NULL
+#removing the 0 column
+Updated_master_data <- FEMA_SVI_data
+write.csv(
+  Updated_master_data, 
+  file = here("data/processed/Updated_master_data.csv")
+)
+#updating the processed data
+```
+##Cleaning Decisions
+
+Since the M_TOTPOP column had only 0's for entries, we decided to remove it since it will not provide us any information or distingusihing factors against our other columns, bringing us to a toal of 24 columns. All other variables were left as is for now, but we will likely condense down as we further investigate which variables display interesting results. Currently, we believe that the remaining variables could provide insight into our research questions. After, the column was removed, an updated master data was put into our processed folder.
+
+```{r figure}
+tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37021,37115, 37009, 
+                       37161, 37087, 37189)
+
+FEMA_claims_data_filtered %>%
+  filter(countyCode %in% tencounties_highest_claims) %>%
+  ggplot(aes(x = factor(countyCode),y = buildingDamageAmount,
+             color = factor(countyCode))) + geom_point(alpha = 0.5) +
+  labs(title = "Building Damage Amount by Top 10 County Codes FEMA Claim",
+    x = "FIPS County Code", y = "Building Damage Amount ($)",
+    color = "County Code") + theme_classic() +
+    scale_color_discrete(labels = c(                                              #allows me to assign name to each code in legend
+    "37021 = Buncombe",
+    "37111 = Mcdowell",
+    "37089 = Henderson",
+    "37011 = Avery",
+    "37009 = Ashe",
+    "37115 = Madison",
+    "37023 = Burke",
+    "37161 = Rutherford",
+    "37087 = Haywood",
+    "37189 = Watauga")) + coord_cartesian(ylim = c(0, 2000000))
+
+#excluded the outlier of the top claim value of 52840990 (Buncombe) to not smudge all other data points
+#this table shows that our dataset includes a sufficient amount points for each of the top counties affected by Hurricane Helene
+#limitations/quality concerns of our data might include a handful of NA values throughout the dataset, and some outlier values that are excluded from figures to enhance the rest of the data
+```
+
+
