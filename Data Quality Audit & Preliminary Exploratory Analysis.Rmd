@@ -84,7 +84,7 @@ write.csv(
 Since the M_TOTPOP column had only 0's for entries, we decided to remove it since it will not provide us any information or distingusihing factors against our other columns, bringing us to a toal of 24 columns. All other variables were left as is for now, but we will likely condense down as we further investigate which variables display interesting results. Currently, we believe that the remaining variables could provide insight into our research questions. After, the column was removed, an updated master data was put into our processed folder.
 
 ```{r figure}
-tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37021,37115, 37009, 
+tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37023,37115, 37009, 
                        37161, 37087, 37189)
 
 FEMA_claims_data_filtered %>%
