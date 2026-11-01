@@ -1,0 +1,22 @@
+---
+title: "Milestone 3"
+output: html_document
+date: "2026-10-29"
+---
+
+Central Question: How do FEMA disaster relief claims associated with Hurricane Helene correspond to social vulnerability data for impacted counties in NC? 
+
+Supporting Questions: 
+-Which counties in NC sustained the most building damage based on FEMA claims? 
+-How do the overall SVI scores compare for those 10 counties? 
+-How do the percentile rankings for each SVI sub-theme compare for the top 10 counties?
+-What is the correlation between overall SVI percentiles and building damage? 
+
+Variables: 
+buildingDamageAmount- (dollars) 
+countyCode- (numeric code)
+RPL_THEME1- (percentile) Percentile ranking for Socioeconomic Status theme summary  
+RPL_THEME2- (percentile) Percentile ranking for Household Characteristics theme summary 
+RPL_THEME3- (percentile) Percentile ranking for Racial and Ethnic Minority Status theme 
+RPL_THEME4- (percentile) Percentile ranking for Housing Type/ Transportation theme 
+RPL_THEMES- (percentile) Overall percentile ranking 
