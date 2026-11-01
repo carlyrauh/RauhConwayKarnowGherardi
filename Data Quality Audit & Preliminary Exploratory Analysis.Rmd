@@ -5,6 +5,7 @@ output: pdf_document
 ---
 
 ```{r setup}
+install.packages("here")
 library(readr)
 library(here)
 library(dplyr)
