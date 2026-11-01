@@ -20,3 +20,111 @@ RPL_THEME2- (percentile) Percentile ranking for Household Characteristics theme 
 RPL_THEME3- (percentile) Percentile ranking for Racial and Ethnic Minority Status theme 
 RPL_THEME4- (percentile) Percentile ranking for Housing Type/ Transportation theme 
 RPL_THEMES- (percentile) Overall percentile ranking 
+```{r setup}
+install.packages("here")
+library(readr)
+library(here)
+library(dplyr)
+library(ggplot2)
+#loading appropriate packages
+setwd(here())
+getwd() 
+#setting the wroking directory
+FEMA_SVI_data <- read_csv(here
+("data/processed/master_FEMA_SVI_data.csv"))
+```
+
+```{r figure fema}
+tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37023,37115, 37009, 
+                       37161, 37087, 37189)
+
+FEMA_claims_data_filtered %>%
+  filter(countyCode %in% tencounties_highest_claims) %>%
+  ggplot(aes(x = factor(countyCode),y = buildingDamageAmount,
+             color = factor(countyCode))) + geom_point(alpha = 0.5) +
+  labs(title = "Building Damage Amount by Top 10 County Codes FEMA Claim",
+    x = "FIPS County Code", y = "Building Damage Amount ($)",
+    color = "County Code") + theme_classic() +
+    scale_color_discrete(labels = c(                                              #allows me to assign name to each code in legend
+    "37021 = Buncombe",
+    "37111 = Mcdowell",
+    "37089 = Henderson",
+    "37011 = Avery",
+    "37009 = Ashe",
+    "37115 = Madison",
+    "37023 = Burke",
+    "37161 = Rutherford",
+    "37087 = Haywood",
+    "37189 = Watauga")) + coord_cartesian(ylim = c(0, 2000000))
+```
+
+```{r figure svi total}
+SVI_tencounties_highest_claims <- c("Buncombe County", "McDowell County", "Henderson County", "Avery County", "Ashe County", "Madison County", "Burke County", "Rutherford County", "Haywood County", "Watauga County") 
+
+SVI_filtered %>%
+  filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
+  ggplot(aes(x = factor(COUNTY),y = RPL_THEMES,
+             color = factor(COUNTY))) + geom_point(alpha = 0.5) +
+  labs(title = "Overall Social Vulnerability Rating of Top 10 Most Damaged Counties",
+    x = "County", y = "Overall Social Vulnerabilty Index (0-1)",
+    color = "County") + theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  theme(legend.position = "none")
+    
+```
+```{r figure svi1}
+SVI_tencounties_highest_claims <- c("Buncombe County", "McDowell County", "Henderson County", "Avery County", "Ashe County", "Madison County", "Burke County", "Rutherford County", "Haywood County", "Watauga County") 
+
+SVI_filtered %>%
+  filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
+  ggplot(aes(x = factor(COUNTY),y = RPL_THEME1,
+             color = factor(COUNTY))) + geom_point(alpha = 0.5) +
+  labs(title = "Socioeconomic Vulnerability Rating of Top 10 Most Damaged Counties",
+    x = "County", y = "Percentile ranking of Socioeconomic Status(0-1)",
+    color = "County") + theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + theme(legend.position = "none")
+    
+```
+
+```{r figure svi2}
+SVI_tencounties_highest_claims <- c("Buncombe County", "McDowell County", "Henderson County", "Avery County", "Ashe County", "Madison County", "Burke County", "Rutherford County", "Haywood County", "Watauga County") 
+
+SVI_filtered %>%
+  filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
+  ggplot(aes(x = factor(COUNTY),y = RPL_THEME2,
+             color = factor(COUNTY))) + geom_point(alpha = 0.5) +
+  labs(title = "Household Characteristics Vulnerability Rating of Top 10 Most Damaged Counties",
+    x = "County", y = "Percentile ranking of Household Characteristics(0-1)",
+    color = "County") + theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + theme(legend.position = "none")
+    
+```
+
+```{r figure svi3}
+SVI_tencounties_highest_claims <- c("Buncombe County", "McDowell County", "Henderson County", "Avery County", "Ashe County", "Madison County", "Burke County", "Rutherford County", "Haywood County", "Watauga County") 
+
+SVI_filtered %>%
+  filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
+  ggplot(aes(x = factor(COUNTY),y = RPL_THEME3,
+             color = factor(COUNTY))) + geom_point(alpha = 0.5) +
+  labs(title = "Racial and Ethnic Minority Status Vulnerability Rating of Top 10 Most Damaged Counties",
+    x = "County", y = "Percentile ranking for Racial and Ethnic Minority Status (0-1)",
+    color = "County") + theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + theme(legend.position = "none")
+    
+```
+
+```{r figure svi4}
+SVI_tencounties_highest_claims <- c("Buncombe County", "McDowell County", "Henderson County", "Avery County", "Ashe County", "Madison County", "Burke County", "Rutherford County", "Haywood County", "Watauga County") 
+
+SVI_filtered %>%
+  filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
+  ggplot(aes(x = factor(COUNTY),y = RPL_THEME4,
+             color = factor(COUNTY))) + geom_point(alpha = 0.5) +
+  labs(title = "Housing Type/Transportation Vulnerability Rating of Top 10 Most Damaged Counties",
+    x = "County", y = "Percentile ranking for Housing Type/ Transportation (0-1)",
+    color = "County") + theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + theme(legend.position = "none")
+    
+```
+
