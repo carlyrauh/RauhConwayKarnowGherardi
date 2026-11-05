@@ -170,3 +170,10 @@ summary_table
     
 ```
 
+```{r per capita table}
+
+FEMA_SVI_PER_CAPITA <- FEMA_SVI_data %>% mutate(ratio = netBuildingPaymentAmount/E_TOTPOP) %>% rename ("NetBuildingPaymentPerCapita" = "ratio")
+
+
+```
+
