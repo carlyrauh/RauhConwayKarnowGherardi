@@ -172,8 +172,64 @@ summary_table
 
 ```{r per capita table}
 
+#Adding column to dataframe that has net building payment amount per capita using estimated total population column 
 FEMA_SVI_PER_CAPITA <- FEMA_SVI_data %>% mutate(ratio = netBuildingPaymentAmount/E_TOTPOP) %>% rename ("NetBuildingPaymentPerCapita" = "ratio")
-
 
 ```
 
+```{r figure with net building payment amount}
+
+tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37023,37115, 37009, 
+                       37161, 37087, 37189)
+
+#building damage top ten counties
+FEMA_SVI_data %>%
+  filter(countyCode %in% tencounties_highest_claims) %>%
+  ggplot(aes(x = factor(countyCode),y = netBuildingPaymentAmount,
+             color = factor(countyCode))) + geom_point(alpha = 0.5) +
+  labs(title = "Building Damage Amount by Top 10 County Codes FEMA Claim",
+    x = "FIPS County Code", y = "Building Damage Amount ($)",
+    color = "County Code") + theme_classic() +
+    scale_color_discrete(labels = c(                                             
+      #allows me to assign name to each code in legend
+    "37021 = Buncombe",
+    "37111 = Mcdowell",
+    "37089 = Henderson",
+    "37011 = Avery",
+    "37009 = Ashe",
+    "37115 = Madison",
+    "37023 = Burke",
+    "37161 = Rutherford",
+    "37087 = Haywood",
+    "37189 = Watauga")) + coord_cartesian(ylim = c(0, 900000))
+
+```
+```{r summary table with all SVI variables}
+
+#creating summary table 2 with net building payment amount, per capita building payment amount, and all SVI vulnerability indices 
+
+summary_table_2 <- FEMA_SVI_PER_CAPITA %>%
+  filter(countyCode %in% tencounties_highest_claims) %>%
+  group_by(countyCode, COUNTY, RPL_THEMES, RPL_THEME1, RPL_THEME2, RPL_THEME3, RPL_THEME4) %>%  
+  #adding the building payment amount per county and per capita ratio
+  summarize(total_building_payment = sum(netBuildingPaymentAmount, na.rm = TRUE), 
+            total_building_payment_per_capita = sum(netBuildingPaymentAmount, na.rm = 
+                                                    TRUE)/first(E_TOTPOP), .groups =
+                                                    "drop_last") %>% 
+  select(countyCode, COUNTY, total_building_payment, total_building_payment_per_capita,
+         RPL_THEMES, RPL_THEME1, RPL_THEME2, RPL_THEME3, RPL_THEME4) %>%
+  as_tibble()
+
+#changing column names to be more informative  
+colnames(summary_table_2) <- c("FIPS County Code", "County", "Net Building Payment Amount
+                               ($)", "Net Building Payment Amount per capita", "Overall
+                               Social
+                               Vulnerabilty Index (0-1)", "Socioeconomic Vulnerability
+                               (0-1)",
+                               "Household Characteristic Vulnerability (0-1)", "Racial/Ethnic
+                               Minority Vulnerability (0-1)", "Housing Type/Transportation
+                               Vulnerability")
+#view table 2
+summary_table_2
+    
+```
