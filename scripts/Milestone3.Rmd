@@ -71,7 +71,7 @@ SVI_tencounties_highest_claims <- c("Buncombe County", "McDowell County", "Hende
 FEMA_SVI_data %>%
   filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
   ggplot(aes(x = factor(COUNTY),y = RPL_THEMES,
-             color = factor(COUNTY))) + geom_point(alpha = 0.5) +
+             color = factor(COUNTY))) + geom_col() + #changing to geom_col for better readability
   labs(title = "Overall Social Vulnerability Rating of Top 10 Most Damaged Counties",
     x = "County", y = "Overall Social Vulnerabilty Index (0-1)",
     color = "County") + theme_classic() +
@@ -232,4 +232,39 @@ colnames(summary_table_2) <- c("FIPS County Code", "County", "Net Building Payme
 #view table 2
 summary_table_2
     
+```
+
+```{r per capita boxplot}
+tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37023,37115, 37009, 
+                       37161, 37087, 37189)
+
+FEMA_SVI_PER_CAPITA %>%
+  filter(countyCode %in% tencounties_highest_claims) %>%
+  ggplot(aes(
+    x = factor(countyCode),
+    y = NetBuildingPaymentPerCapita, #using per capita data for fair comparison
+    color = factor(countyCode)
+  )) +
+  geom_boxplot() + #using boxplot to show distribution and outliers
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(
+    title = "Net Building Payment Per Capita by County",
+    x = "FIPS County Code",
+    y = "FEMA Net Building Payment Amount Per Capita",
+    color = "County Code"
+  ) +
+  theme_classic() +
+  scale_color_discrete(labels = c(
+    "37021 = Buncombe",
+    "37111 = McDowell",
+    "37089 = Henderson",
+    "37011 = Avery",
+    "37009 = Ashe",
+    "37115 = Madison",
+    "37023 = Burke",
+    "37161 = Rutherford",
+    "37087 = Haywood",
+    "37189 = Watauga"
+  )) +
+  coord_cartesian(ylim = c(0, 30)) #changed scale to fit per capita values 
 ```
