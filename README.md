@@ -11,7 +11,7 @@ Research Question(s): How are the approved FEMA disaster relief claims distribut
 Intended Audience: County and state-level offices coordinating disaster relief, so that our data may inform their decisions about target areas for resources and support following natural disasters
 
 Data access:
-A filtered FEMA claims dataset from the FEMA website is uploaded onto github under the scripts folder in the Filtered_Data_Access.Rmd file. 
+A filtered FEMA claims dataset from the FEMA website is uploaded to GitHub under the scripts folder in the "Filtered_Data_Access.Rmd" file. This CSV was used for data cleaning and processing. The code used to clean the data and filter for our variables is in the "RScript_712_group.Rmd" file in the scripts folder. The final cleaned dataset is uploaded to the processed data folder as "master_FEMA_SVI_data.csv" which is used in our analysis. 
 
 Data Dictionary: 
 
@@ -71,6 +71,13 @@ RPL_THEME4- (numeric) Percentile ranking for Housing Type/ Transportation theme
 
 RPL_THEMES- (numeric) Overall percentile ranking 
 
-Access to our storymaps presentation draft:
-Follow the link to access our storymaps: https://arcg.is/1vnLX53  
 
+Access to our storymaps presentation draft:
+
+  Follow the link to access our storymaps https://arcg.is/1vnLX53  
+
+
+Instructions for reproducing our analysis: 
+  Our analysis was conducted using the script provided in the "Milestone3.Rmd" file in our scripts folder on GitHub. This uses the "master_FEMA_SVI_data.csv" data from our processed data folder, which was cleaned in the "RScript_712_group.Rmd" script from the scripts folder. Follow the "Milestone3.Rmd" script to reproduce our analysis. 
+  
+  
