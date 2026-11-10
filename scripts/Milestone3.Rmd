@@ -63,20 +63,29 @@ FEMA_SVI_data %>%
 ```
 
 ```{r figure svi total}
-SVI_tencounties_highest_claims <- c("Buncombe County", "McDowell County", "Henderson County", 
-                                    "Avery County", "Ashe County", "Madison County", 
-                                    "Burke County", "Rutherford County", "Haywood County", 
-                                    "Watauga County") 
-
 FEMA_SVI_data %>%
   filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
-  ggplot(aes(x = factor(COUNTY),y = RPL_THEMES,
-             color = factor(COUNTY))) + geom_col() + #changing to geom_col for better readability
-  labs(title = "Overall Social Vulnerability Rating of Top 10 Most Damaged Counties",
-    x = "County", y = "Overall Social Vulnerabilty Index (0-1)",
-    color = "County") + theme_classic() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-  theme(legend.position = "none")
+  distinct(COUNTY, RPL_THEMES) %>%
+  ggplot(aes(x = factor(COUNTY),
+             y = RPL_THEMES,
+             fill = factor(COUNTY))) +
+  geom_col() +
+  labs(
+    title = "Overall Social Vulnerability Rating of Top 10 Most Damaged Counties",
+    x = "County",
+    y = "Overall Social Vulnerability Index (0-1)",
+    fill = "County"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      vjust = 1,
+      hjust = 1
+    ),
+    legend.position = "none"
+  )
+   
     
 ```
 ```{r figure svi1}
