@@ -247,33 +247,47 @@ summary_table_2
 tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37023,37115, 37009, 
                        37161, 37087, 37189)
 
+tencounties_highest_claims <- c(
+  37021, 37111, 37089, 37011, 37023,
+  37115, 37009, 37161, 37087, 37189
+)
+
 FEMA_SVI_PER_CAPITA %>%
   filter(countyCode %in% tencounties_highest_claims) %>%
   ggplot(aes(
     x = factor(countyCode),
-    y = NetBuildingPaymentPerCapita, #using per capita data for fair comparison
+    y = NetBuildingPaymentPerCapita,
     color = factor(countyCode)
   )) +
-  geom_boxplot() + #using boxplot to show distribution and outliers
+  geom_boxplot() +
   geom_point(alpha = 0.5, size = 0.5) +
   labs(
     title = "Net Building Payment Per Capita by County",
-    x = "FIPS County Code",
+    x = "County",
     y = "FEMA Net Building Payment Amount Per Capita",
     color = "County Code"
   ) +
   theme_classic() +
-  scale_color_discrete(labels = c(
-    "37021 = Buncombe",
-    "37111 = McDowell",
-    "37089 = Henderson",
-    "37011 = Avery",
-    "37009 = Ashe",
-    "37115 = Madison",
-    "37023 = Burke",
-    "37161 = Rutherford",
-    "37087 = Haywood",
-    "37189 = Watauga"
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      vjust = 1,
+      hjust = 1
+    ), 
+    legend.position = "none", 
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  scale_x_discrete(labels = c(
+    "37021" = "Buncombe",
+    "37111" = "McDowell",
+    "37089" = "Henderson",
+    "37011" = "Avery",
+    "37009" = "Ashe",
+    "37115" = "Madison",
+    "37023" = "Burke",
+    "37161" = "Rutherford",
+    "37087" = "Haywood",
+    "37189" = "Watauga"
   )) +
-  coord_cartesian(ylim = c(0, 30)) #changed scale to fit per capita values 
+  coord_cartesian(ylim = c(0, 30))
 ```
