@@ -240,6 +240,21 @@ colnames(summary_table_2) <- c("FIPS County Code", "County", "Net Building Payme
                                Vulnerability")
 #view table 2
 summary_table_2
+
+
+#creating summary table for SVI percentile rankings 
+
+SVI_summary_table <- FEMA_SVI_data %>%
+  filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
+  select(COUNTY, RPL_THEMES, RPL_THEME1, RPL_THEME2, RPL_THEME3, RPL_THEME4) %>%
+  distinct(COUNTY, .keep_all = TRUE) %>%
+  arrange(COUNTY)
+  
+colnames(SVI_summary_table) <- c("County", "Overall
+                               Social Vulnerability Index (0-1)", "Percentile Ranking of Socioeconomic Status (0-1)", "Percentile Ranking of Household Characteristics (0-1)", "Percentile Ranking of Racial/Ethnic
+                               Minority Status (0-1)", "Percentile Ranking for Housing Type/Transportation (0-1)")
+
+SVI_summary_table
     
 ```
 
