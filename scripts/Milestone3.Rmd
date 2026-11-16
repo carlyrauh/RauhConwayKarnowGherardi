@@ -257,6 +257,129 @@ colnames(SVI_summary_table) <- c("County", "Overall
 SVI_summary_table
     
 ```
+```{r correlation overall}
+ggplot(summary_table_2, aes(x = `Net Building Payment Amount per capita`,
+y = `Overall
+                               Social
+                               Vulnerabilty Index (0-1)`)) +
+#x=net building amount per capita for each county, y= Overall vuln for top 10 counties 
+  geom_point(aes(color = County), size = 5) +
+geom_smooth(method = "lm",formula = y ~ x, color = "black") +
+#adding the lines of best fit  
+  stat_regline_equation(
+  aes(label = after_stat(eq.label)),
+  label.x = min(summary_table_2$`Net Building Payment Amount per capita`),
+  label.y = 0.98
+) +
+    #adds the line of best fit equation to graph;
+#used chatgpt to figure out what code would do this
+stat_cor(
+  aes(label = after_stat(r.label)),
+  label.x = min(summary_table_2$`Net Building Payment Amount per capita`),
+  label.y = 0.90
+) +
+    #adds the r correlation value to graph;
+#used chatgpt to figure out what code would do this
+labs(title = "Building Payment per Capita vs. Overall Social Vulnerability", x = expression("Net Building Payment Amount per Capita ($)"),
+y = expression("Overall Social Vulnerabilty Index (0-1)")) +
+#plot labels
+coord_cartesian(ylim = c(0, 1)) #zooming in to where the bulk of data is for visibility
+
+```
+```{r}
+vulnerability_data <- summary_table_2 %>%
+  pivot_longer(
+    cols = c(
+      `Socioeconomic Vulnerability
+                               (0-1)`,
+      `Racial/Ethnic
+                               Minority Vulnerability (0-1)`),
+    names_to = "Vulnerability_Type",
+    values_to = "Vulnerability_Score")
+#assigning values to one dataframe so I can plot two vulnerabilities at once 
+#used ChatGPT to troubleshoot
+
+ggplot(vulnerability_data,
+       aes(x = `Net Building Payment Amount per capita`,
+           y = Vulnerability_Score,
+           color = Vulnerability_Type)) +
+geom_point(aes(color = Vulnerability_Type), size = 5) +
+#making points by vulnerability type and points large for visibility
+geom_smooth(method = "lm",
+              formula = y ~ x,
+              aes(color = Vulnerability_Type),
+              se = FALSE) +
+#adding both lines at once
+labs(
+    title = "Building Payment per Capita vs. Socioeconomic & Racial/Ethnic Vulnerability",
+    x = "Net Building Payment Amount per Capita ($)",
+    y = "Vulnerability Index (0-1)",
+    color = "Vulnerability Type") +
+scale_color_discrete(
+  labels = c(
+    "Socioeconomic Vulnerability",
+    "Racial/Ethnic Minority Vulnerability"))+
+#needed to assign specific lables because there are spaces in the df for some reason
+  coord_cartesian(ylim = c(0, 1))+
+#capping the y-axis from 0-1 because that's the possible values of the index
+stat_regline_equation(
+  aes(label = after_stat(eq.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.98, 0.85)) +
+stat_cor(
+  aes(label = after_stat(r.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.93, 0.80))
+#adds the line of best fit and r correlation value to graph;
+#used chatgpt to figure out what code would do this
+  
+```
+```{r}
+vulnerability_data_2 <- summary_table_2 %>%
+  pivot_longer(
+    cols = c(
+      `Household Characteristic Vulnerability (0-1)`,
+      `Housing Type/Transportation
+                               Vulnerability`),
+    names_to = "Vulnerability_Type",
+    values_to = "Vulnerability_Score")
+#assigning values to one dataframe so I can plot two vulnerabilities at once 
+#used ChatGPT to troubleshoot
+
+ggplot(vulnerability_data_2,
+       aes(x = `Net Building Payment Amount per capita`,
+           y = Vulnerability_Score,
+           color = Vulnerability_Type)) +
+geom_point(aes(color = Vulnerability_Type), size = 5) +
+#making points by vulnerability type and points large for visibility
+geom_smooth(method = "lm",
+              formula = y ~ x,
+              aes(color = Vulnerability_Type),
+              se = FALSE) +
+#adding both lines at once
+labs(
+    title = "Building Payment per Capita vs. Household & Transportation Vulnerability",
+    x = "Net Building Payment Amount per Capita ($)",
+    y = "Vulnerability Index (0-1)",
+    color = "Vulnerability Type") +
+scale_color_discrete(
+  labels = c(
+    "Household Characteristic Vulnerability",
+      "Housing Type/Transportation Vulnerability"))+
+#needed to assign specific lables because there are spaces in the df for some reason
+  coord_cartesian(ylim = c(0, 1))+
+#capping the y-axis from 0-1 because that's the possible values of the index
+stat_regline_equation(
+  aes(label = after_stat(eq.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.98, 0.85)) +
+stat_cor(
+  aes(label = after_stat(r.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.93, 0.80))
+#adds the line of best fit and r correlation value to graph;
+#used chatgpt to figure out what code would do this
+```
 
 ```{r per capita boxplot}
 tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37023,37115, 37009, 
