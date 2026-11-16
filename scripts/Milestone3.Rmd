@@ -372,11 +372,11 @@ scale_color_discrete(
 stat_regline_equation(
   aes(label = after_stat(eq.label), color = Vulnerability_Type),
   label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
-  label.y = c(0.98, 0.85)) +
+  label.y = c(1, 0.94)) +
 stat_cor(
   aes(label = after_stat(r.label), color = Vulnerability_Type),
   label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
-  label.y = c(0.93, 0.80))
+  label.y = c(0.98, 0.92))
 #adds the line of best fit and r correlation value to graph;
 #used chatgpt to figure out what code would do this
 ```
