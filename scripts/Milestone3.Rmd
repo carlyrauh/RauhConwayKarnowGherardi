@@ -251,6 +251,16 @@ colnames(SVI_summary_table) <- c("County", "Overall
 SVI_summary_table
     
 ```
+```{r linear regression}
+
+#linear regression 
+SVI_regression <- lm(`Overall Social Vulnerability Index (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(SVI_regression)
+plot(SVI_regression)
+
+```
+
 ```{r correlation overall}
 ggplot(summary_table_2, aes(x = `Net Building Payment Amount per capita`,
 y = `Overall Social Vulnerability Index (0-1)`)) +
@@ -271,26 +281,24 @@ stat_cor(
   label.y = 0.90
 ) +
     #adds the r correlation value to graph;
+stat_cor(
+  aes(label = after_stat(rr.label)),
+  label.x = min(summary_table_2$`Net Building Payment Amount per capita`),
+  label.y = 0.80
+) +
 #used chatgpt to figure out what code would do this
 labs(title = "Building Payment per Capita vs. Overall Social Vulnerability", x = expression("Net Building Payment Amount per Capita ($)"),
 y = expression("Overall Social Vulnerability Index (0-1)")) +
 #plot labels
 coord_cartesian(ylim = c(0, 1)) #zooming in to where the bulk of data is for visibility
 
-#linear regression 
-SVI_regression <- lm(`Overall Social Vulnerability Index (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
-
-plot(SVI_regression)
-
 ```
 ```{r}
 vulnerability_data <- summary_table_2 %>%
   pivot_longer(
     cols = c(
-      `Socioeconomic Vulnerability
-                               (0-1)`,
-      `Racial/Ethnic
-                               Minority Vulnerability (0-1)`),
+      `Socioeconomic Vulnerability (0-1)`,
+      `Racial/Ethnic Minority Vulnerability (0-1)`),
     names_to = "Vulnerability_Type",
     values_to = "Vulnerability_Score")
 #assigning values to one dataframe so I can plot two vulnerabilities at once 
@@ -313,8 +321,7 @@ labs(
     y = "Vulnerability Index (0-1)",
     color = "Vulnerability Type") +
 scale_color_discrete(
-  labels = c(
-    "Socioeconomic Vulnerability",
+  labels = c("Socioeconomic Vulnerability",
     "Racial/Ethnic Minority Vulnerability"))+
 #needed to assign specific lables because there are spaces in the df for some reason
   coord_cartesian(ylim = c(0, 1))+
@@ -322,11 +329,16 @@ scale_color_discrete(
 stat_regline_equation(
   aes(label = after_stat(eq.label), color = Vulnerability_Type),
   label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
-  label.y = c(0.98, 0.85)) +
+  label.y = c(0.98, 0.83)) +
 stat_cor(
   aes(label = after_stat(r.label), color = Vulnerability_Type),
   label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
-  label.y = c(0.93, 0.80))
+  label.y = c(0.93, 0.78)) +
+stat_cor(
+  aes(label = after_stat(rr.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.88, 0.75)
+)
 #adds the line of best fit and r correlation value to graph;
 #used chatgpt to figure out what code would do this
   
@@ -336,8 +348,7 @@ vulnerability_data_2 <- summary_table_2 %>%
   pivot_longer(
     cols = c(
       `Household Characteristic Vulnerability (0-1)`,
-      `Housing Type/Transportation
-                               Vulnerability`),
+      `Housing Type/Transportation Vulnerability`),
     names_to = "Vulnerability_Type",
     values_to = "Vulnerability_Score")
 #assigning values to one dataframe so I can plot two vulnerabilities at once 
@@ -369,11 +380,16 @@ scale_color_discrete(
 stat_regline_equation(
   aes(label = after_stat(eq.label), color = Vulnerability_Type),
   label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
-  label.y = c(1, 0.94)) +
+  label.y = c(1, 0.93)) +
 stat_cor(
   aes(label = after_stat(r.label), color = Vulnerability_Type),
   label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
-  label.y = c(0.98, 0.92))
+  label.y = c(0.98, 0.91)) +
+stat_cor(
+  aes(label = after_stat(rr.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.96, 0.89)
+)
 #adds the line of best fit and r correlation value to graph;
 #used chatgpt to figure out what code would do this
 ```
