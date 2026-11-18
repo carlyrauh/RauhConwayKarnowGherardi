@@ -253,11 +253,35 @@ SVI_summary_table
 ```
 ```{r linear regression}
 
-#linear regression 
+#linear regression overall SVI
 SVI_regression <- lm(`Overall Social Vulnerability Index (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
 
 summary(SVI_regression)
 plot(SVI_regression)
+
+#linear regression socioeconomic 
+socioecon_regression <- lm(`Socioeconomic Vulnerability (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(socioecon_regression)
+plot(socioecon_regression)
+
+#linear regression racial/ethnic minority
+racialethnic_regression <- lm(`Racial/Ethnic Minority Vulnerability (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(racialethnic_regression)
+plot(racialethnic_regression)
+     
+#linear regression household
+household_regression <- lm(`Household Characteristic Vulnerability (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(household_regression)
+plot(household_regression)
+
+#linear regression housing type
+housingtypetransportation_regression <- lm(`Housing Type/Transportation Vulnerability` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(housingtypetransportation_regression)
+plot(housingtypetransportation_regression)
 
 ```
 
@@ -300,8 +324,19 @@ vulnerability_data <- summary_table_2 %>%
       `Socioeconomic Vulnerability (0-1)`,
       `Racial/Ethnic Minority Vulnerability (0-1)`),
     names_to = "Vulnerability_Type",
-    values_to = "Vulnerability_Score")
-#assigning values to one dataframe so I can plot two vulnerabilities at once 
+    values_to = "Vulnerability_Score") 
+#assigning values to one dataframe so I can plot two vulnerabilities at once
+
+vulnerability_data <- vulnerability_data %>%
+  mutate(
+    Vulnerability_Type = factor(
+      Vulnerability_Type,
+      levels = c(
+        "Socioeconomic Vulnerability (0-1)",
+        "Racial/Ethnic Minority Vulnerability (0-1)"
+      )
+    )
+  )
 #used ChatGPT to troubleshoot
 
 ggplot(vulnerability_data,
