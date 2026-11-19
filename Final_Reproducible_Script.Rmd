@@ -1,0 +1,437 @@
+---
+title: "Final Reproducible Script"
+author: "Carly Rauh, Kassie Karnow, Carolina Conway, Luca Gherardi"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Research Question: How do FEMA disaster relief claims associated with Hurricane Helene correspond to social vulnerability data for impacted counties in NC? 
+
+## Load Required Packages 
+```{r load packages}
+#load packages 
+library(tidyverse) 
+library(fs)
+library(dplyr)
+library(readr)
+library(here)
+library(ggplot2)
+library(ggpubr)
+```
+
+## Import Original Data
+```{r importing original data}
+#Get the box path, based on the operating system
+current_os <- Sys.info()[["sysname"]]
+if (current_os == "Darwin") {
+  print("Running on a Mac")
+  box_path = path_home("Library","CloudStorage","Box-Box","ENVIRON 712L-Students")
+} else if (current_os == "Windows") {
+  print("Running on a PC (Windows)")
+  box_path = path_home("Box","ENVIRON 712L-Students")
+} else if (current_os == "Linux") {
+  print("Running on Linux; Box drive is not supported")
+}
+
+#Get FEMA data 
+FEMA_claims <- read.csv(
+  path(box_path,"Data","Disasters","FEMA","NfipClaimsV3.csv"),
+  stringsAsFactors = TRUE
+  )
+
+#Filter FEMA data for variables of interest and for Hurricane Helene, and NC
+FEMA_claims_filtered <- FEMA_claims %>% filter(floodEvent == "Hurricane Helene", state == "NC") %>% 
+  select(dateOfLoss, ratedFloodZone, numberOfFloorsInTheInsuredBuilding, amountPaidOnBuildingClaim, 
+         amountPaidOnIncreasedCostOfComplianceClaim, totalBuildingInsuranceCoverage, buildingDamageAmount, 
+         netBuildingPaymentAmount, buildingPropertyValue, numberOfUnits, countyCode)
+      
+#Creating CSV 
+write.csv(FEMA_claims_filtered, "/Users/carlyrauh/Desktop/ENV_812/712_Lab/RauhConwayKarnowGherardi/FEMA_filtered.csv")
+```
+
+## Importing SVI Data and Data filtering
+```{r Import and filter data}
+
+# import SVI Dataset
+SVI <- read.csv("data/NORTHCAROLINA_COUNTY.csv", header=TRUE)
+
+# SVI data dimensions 
+nrow(SVI)
+ncol(SVI)
+dim(SVI)
+
+# import FEMA claims dataset 
+FEMA_claims_data <- read.csv("data/FEMA_filtered.csv", header=TRUE)
+
+#FEMA data dimensions
+nrow(FEMA_claims_data)
+ncol(FEMA_claims_data)
+dim(FEMA_claims_data)
+
+# filter SVI data for variables of interest 
+SVI_filtered <- SVI %>% select(COUNTY, FIPS, AREA_SQMI, E_TOTPOP, M_TOTPOP, E_HU, M_HU, E_HH, 
+                               M_HH, RPL_THEME1, RPL_THEME2, RPL_THEME3, RPL_THEME4, RPL_THEMES)
+dim(SVI_filtered) #dimensions of filtered SVI data
+
+
+# filter FEMA data for variables of interest 
+FEMA_claims_data_filtered <- FEMA_claims_data %>% select(dateOfLoss, ratedFloodZone,
+                                                    numberOfFloorsInTheInsuredBuilding,
+                                                    amountPaidOnBuildingClaim,
+                                                    amountPaidOnIncreasedCostOfComplianceClaim,
+                                                    totalBuildingInsuranceCoverage, 
+                                                    buildingDamageAmount, 
+                                                    netBuildingPaymentAmount, buildingPropertyValue,
+                                                    numberOfUnits, countyCode)
+dim(FEMA_claims_data_filtered) #dimensions of filtered FEMA data
+
+```
+
+## Joining Data and Creating Master Sheet
+```{r Join data}
+
+# create master dataset, joining the two datasets by their county code ID (FIPS)
+master_FEMA_SVI_data <- full_join(FEMA_claims_data_filtered, SVI_filtered,
+  by = c("countyCode" = "FIPS")
+)
+dim(master_FEMA_SVI_data) #dimensions of final dataset
+
+# creating CSV of master data set and adding it to data processed folder 
+write.csv(master_FEMA_SVI_data, "data/processed/master_FEMA_SVI_data.csv")
+```
+
+# Analysis 
+
+## Set working directory and reading CSV 
+```{r setting working directory}
+
+setwd(here())
+getwd() 
+#setting the wroking directory
+FEMA_SVI_data <- read_csv(here
+("data/processed/master_FEMA_SVI_data.csv"))
+```
+
+## SVI histogram for top counties 
+```{r figure svi total}
+SVI_tencounties_highest_claims <- c("Buncombe County", "McDowell County", "Henderson County", 
+                                    "Avery County", "Ashe County", "Madison County", 
+                                    "Burke County", "Rutherford County", "Haywood County", 
+                                    "Watauga County") 
+FEMA_SVI_data %>%
+  filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
+  distinct(COUNTY, RPL_THEMES) %>%
+  ggplot(aes(x = factor(COUNTY),
+             y = RPL_THEMES,
+             fill = factor(COUNTY))) +
+  geom_col() +
+  labs(
+    title = "Overall Social Vulnerability Rating of Top 10 Most Damaged Counties",
+    x = "County",
+    y = "Overall Social Vulnerability Index (0-1)",
+    fill = "County"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      vjust = 1,
+      hjust = 1
+    ),
+    legend.position = "none"
+  )
+   
+```
+
+## Creating per capita column
+```{r per capita table}
+#Adding column to dataframe that has net building payment amount per capita using estimated total population column 
+FEMA_SVI_PER_CAPITA <- FEMA_SVI_data %>% mutate(ratio = netBuildingPaymentAmount/E_TOTPOP) %>% rename ("NetBuildingPaymentPerCapita" = "ratio")
+```
+
+## Creating Summary Tables 
+```{r summary table}
+#creating summary table
+tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37023,37115, 37009, 
+                       37161, 37087, 37189)
+summary_table <- FEMA_SVI_data %>%
+  filter(countyCode %in% tencounties_highest_claims) %>%
+  group_by(countyCode, COUNTY, RPL_THEMES) %>% 
+  summarize(total_building_damage = sum(buildingDamageAmount, na.rm = TRUE), 
+            .groups = "drop_last") %>% 
+  #adding the building damage amount per county 
+  select(countyCode, COUNTY, total_building_damage, RPL_THEMES) %>%
+  as_tibble()
+
+#changing column names to be more informative  
+colnames(summary_table) <- c("FIPS County Code", "County", "Building Damage Amount ($)", 
+                             "Overall Social Vulnerabilty Index (0-1)")
+#view table
+summary_table
+
+#creating summary table 2 with net building payment amount, per capita building payment amount, and all SVI vulnerability indices 
+
+summary_table_2 <- FEMA_SVI_PER_CAPITA %>%
+  filter(countyCode %in% tencounties_highest_claims) %>%
+  group_by(countyCode, COUNTY, RPL_THEMES, RPL_THEME1, RPL_THEME2, RPL_THEME3, RPL_THEME4) %>%  
+  #adding the building payment amount per county and per capita ratio
+  summarize(total_building_payment = sum(netBuildingPaymentAmount, na.rm = TRUE), 
+            total_building_payment_per_capita = sum(netBuildingPaymentAmount, na.rm = 
+                                                    TRUE)/first(E_TOTPOP), .groups =
+                                                    "drop_last") %>% 
+  select(countyCode, COUNTY, total_building_payment, total_building_payment_per_capita,
+         RPL_THEMES, RPL_THEME1, RPL_THEME2, RPL_THEME3, RPL_THEME4) %>%
+  as_tibble()
+
+#changing column names to be more informative  
+colnames(summary_table_2) <- c("FIPS County Code", "County", "Net Building Payment Amount ($)", "Net Building Payment Amount per capita", "Overall Social Vulnerability Index (0-1)", "Socioeconomic Vulnerability (0-1)", "Household Characteristic Vulnerability (0-1)", "Racial/Ethnic Minority Vulnerability (0-1)", "Housing Type/Transportation Vulnerability")
+#view table 2
+summary_table_2
+
+
+#creating summary table for SVI percentile rankings 
+
+SVI_summary_table <- FEMA_SVI_data %>%
+  filter(COUNTY %in% SVI_tencounties_highest_claims) %>%
+  select(COUNTY, RPL_THEMES, RPL_THEME1, RPL_THEME2, RPL_THEME3, RPL_THEME4) %>%
+  distinct(COUNTY, .keep_all = TRUE) %>%
+  arrange(COUNTY)
+  
+colnames(SVI_summary_table) <- c("County", "Overall
+                               Social Vulnerability Index (0-1)", "Percentile Ranking of Socioeconomic Status (0-1)", "Percentile Ranking of Household Characteristics (0-1)", "Percentile Ranking of Racial/Ethnic
+                               Minority Status (0-1)", "Percentile Ranking for Housing Type/Transportation (0-1)")
+
+SVI_summary_table
+    
+```
+
+## Boxplot of top counties 
+```{r per capita boxplot}
+tencounties_highest_claims <- c(37021, 37111, 37089, 37011, 37023,37115, 37009, 
+                       37161, 37087, 37189)
+
+FEMA_SVI_PER_CAPITA %>%
+  filter(countyCode %in% tencounties_highest_claims) %>%
+  ggplot(aes(
+    x = factor(countyCode),
+    y = NetBuildingPaymentPerCapita,
+    color = factor(countyCode)
+  )) +
+  geom_boxplot() +
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(
+    title = "Net Building Payment Per Capita by County",
+    x = "County",
+    y = "FEMA Net Building Payment Amount Per Capita",
+    color = "County Code"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      vjust = 1,
+      hjust = 1
+    ), 
+    legend.position = "none", 
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  scale_x_discrete(labels = c(
+    "37021" = "Buncombe",
+    "37111" = "McDowell",
+    "37089" = "Henderson",
+    "37011" = "Avery",
+    "37009" = "Ashe",
+    "37115" = "Madison",
+    "37023" = "Burke",
+    "37161" = "Rutherford",
+    "37087" = "Haywood",
+    "37189" = "Watauga"
+  )) +
+  coord_cartesian(ylim = c(0, 30))
+```
+
+## Linear Regression Analysis
+```{r linear regression}
+
+#linear regression overall SVI
+SVI_regression <- lm(`Overall Social Vulnerability Index (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(SVI_regression)
+plot(SVI_regression)
+
+#linear regression socioeconomic 
+socioecon_regression <- lm(`Socioeconomic Vulnerability (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(socioecon_regression)
+plot(socioecon_regression)
+
+#linear regression racial/ethnic minority
+racialethnic_regression <- lm(`Racial/Ethnic Minority Vulnerability (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(racialethnic_regression)
+plot(racialethnic_regression)
+     
+#linear regression household
+household_regression <- lm(`Household Characteristic Vulnerability (0-1)` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(household_regression)
+plot(household_regression)
+
+#linear regression housing type
+housingtypetransportation_regression <- lm(`Housing Type/Transportation Vulnerability` ~ `Net Building Payment Amount per capita`, data = summary_table_2)
+
+summary(housingtypetransportation_regression)
+plot(housingtypetransportation_regression)
+
+```
+
+## Correlation Figures 
+```{r correlation overall}
+ggplot(summary_table_2, aes(x = `Net Building Payment Amount per capita`,
+y = `Overall Social Vulnerability Index (0-1)`)) +
+#x=net building amount per capita for each county, y= Overall vuln for top 10 counties 
+  geom_point(aes(color = County), size = 5) +
+geom_smooth(method = "lm",formula = y ~ x, color = "black") +
+#adding the lines of best fit  
+  stat_regline_equation(
+  aes(label = after_stat(eq.label)),
+  label.x = min(summary_table_2$`Net Building Payment Amount per capita`),
+  label.y = 0.98
+) +
+    #adds the line of best fit equation to graph;
+#used chatgpt to figure out what code would do this
+stat_cor(
+  aes(label = after_stat(r.label)),
+  label.x = min(summary_table_2$`Net Building Payment Amount per capita`),
+  label.y = 0.90
+) +
+    #adds the r correlation value to graph;
+stat_cor(
+  aes(label = after_stat(rr.label)),
+  label.x = min(summary_table_2$`Net Building Payment Amount per capita`),
+  label.y = 0.80
+) +
+#used chatgpt to figure out what code would do this
+labs(title = "Building Payment per Capita vs. Overall Social Vulnerability", x = expression("Net Building Payment Amount per Capita ($)"),
+y = expression("Overall Social Vulnerability Index (0-1)")) +
+#plot labels
+coord_cartesian(ylim = c(0, 1)) #zooming in to where the bulk of data is for visibility
+
+vulnerability_data <- summary_table_2 %>%
+  pivot_longer(
+    cols = c(
+      `Socioeconomic Vulnerability (0-1)`,
+      `Racial/Ethnic Minority Vulnerability (0-1)`),
+    names_to = "Vulnerability_Type",
+    values_to = "Vulnerability_Score") 
+#assigning values to one dataframe so I can plot two vulnerabilities at once
+
+vulnerability_data <- vulnerability_data %>%
+  mutate(
+    Vulnerability_Type = factor(
+      Vulnerability_Type,
+      levels = c(
+        "Socioeconomic Vulnerability (0-1)",
+        "Racial/Ethnic Minority Vulnerability (0-1)"
+      )
+    )
+  )
+#used ChatGPT to troubleshoot
+
+ggplot(vulnerability_data,
+       aes(x = `Net Building Payment Amount per capita`,
+           y = Vulnerability_Score,
+           color = Vulnerability_Type)) +
+geom_point(aes(color = Vulnerability_Type), size = 5) +
+#making points by vulnerability type and points large for visibility
+geom_smooth(method = "lm",
+              formula = y ~ x,
+              aes(color = Vulnerability_Type),
+              se = FALSE) +
+#adding both lines at once
+labs(
+    title = "Building Payment per Capita vs. Socioeconomic & Racial/Ethnic Vulnerability",
+    x = "Net Building Payment Amount per Capita ($)",
+    y = "Vulnerability Index (0-1)",
+    color = "Vulnerability Type") +
+scale_color_discrete(
+  labels = c("Socioeconomic Vulnerability",
+    "Racial/Ethnic Minority Vulnerability"))+
+#needed to assign specific lables because there are spaces in the df for some reason
+  coord_cartesian(ylim = c(0, 1))+
+#capping the y-axis from 0-1 because that's the possible values of the index
+stat_regline_equation(
+  aes(label = after_stat(eq.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.98, 0.83)) +
+stat_cor(
+  aes(label = after_stat(r.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.93, 0.78)) +
+stat_cor(
+  aes(label = after_stat(rr.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.88, 0.75)
+)
+#adds the line of best fit and r correlation value to graph;
+#used chatgpt to figure out what code would do this
+
+vulnerability_data_2 <- summary_table_2 %>%
+  pivot_longer(
+    cols = c(
+      `Household Characteristic Vulnerability (0-1)`,
+      `Housing Type/Transportation Vulnerability`),
+    names_to = "Vulnerability_Type",
+    values_to = "Vulnerability_Score")
+#assigning values to one dataframe so I can plot two vulnerabilities at once 
+#used ChatGPT to troubleshoot
+
+ggplot(vulnerability_data_2,
+       aes(x = `Net Building Payment Amount per capita`,
+           y = Vulnerability_Score,
+           color = Vulnerability_Type)) +
+geom_point(aes(color = Vulnerability_Type), size = 5) +
+#making points by vulnerability type and points large for visibility
+geom_smooth(method = "lm",
+              formula = y ~ x,
+              aes(color = Vulnerability_Type),
+              se = FALSE) +
+#adding both lines at once
+labs(
+    title = "Building Payment per Capita vs. Household & Transportation Vulnerability",
+    x = "Net Building Payment Amount per Capita ($)",
+    y = "Vulnerability Index (0-1)",
+    color = "Vulnerability Type") +
+scale_color_discrete(
+  labels = c(
+    "Household Characteristic Vulnerability",
+      "Housing Type/Transportation Vulnerability"))+
+#needed to assign specific lables because there are spaces in the df for some reason
+  coord_cartesian(ylim = c(0, 1))+
+#capping the y-axis from 0-1 because that's the possible values of the index
+stat_regline_equation(
+  aes(label = after_stat(eq.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(1, 0.93)) +
+stat_cor(
+  aes(label = after_stat(r.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.98, 0.91)) +
+stat_cor(
+  aes(label = after_stat(rr.label), color = Vulnerability_Type),
+  label.x = min(vulnerability_data$`Net Building Payment Amount per capita`),
+  label.y = c(0.96, 0.89)
+)
+#adds the line of best fit and r correlation value to graph;
+#used chatgpt to figure out what code would do this
+```
+
+
+
+
+
+
